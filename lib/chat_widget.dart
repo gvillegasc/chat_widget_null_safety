@@ -1,5 +1,3 @@
-library chat_widget;
-
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:web_socket_channel/io.dart';
@@ -52,8 +50,8 @@ class ChatWidget extends StatefulWidget {
 
   // FOR IN AND OUT OF DATA
   final IOWebSocketChannel channel;
-  final Function onData;
-  final Function onSubmit;
+  final Function(String, dynamic) onData;
+  final Function(String, dynamic) onSubmit;
 
   // Initializer of data
   final List<Widget> messages;
@@ -84,32 +82,34 @@ class _ChatWidgetState extends State<ChatWidget> with TickerProviderStateMixin {
   void onData(dynamic _data) {
     final data = json.decode(_data as String) as Map<String, dynamic>;
 
-    switch (data['type'] as String) {
-      case 'ping':
-        break;
-      case 'welcome':
-        print('Welcome');
-        break;
-      case 'confirm_subscription':
-        print('Connected');
-        if (mounted) {
-          setState(() {
-            _isConnected = true;
-          });
-        }
-        break;
-      default:
-        print(data.toString());
-    }
-
-    if (data['type'] != 'ping' && data['message'] != null) {
+    if (data['type'] != null) {
+      switch (data['type'] as String) {
+        case 'ping':
+          break;
+        case 'welcome':
+          print('Welcome');
+          break;
+        case 'confirm_subscription':
+          print('Connected');
+          if (mounted) {
+            setState(() {
+              _isConnected = true;
+            });
+          }
+          break;
+        default:
+          print(data.toString());
+      }
+    } else {
+      //  if (data['type'] != 'ping' && data['message'] != null) {
       if (data['message']['message'] != null) {
         if (mounted) {
           setState(() {
-            widget.onData(data['message']['message'], this);
+            widget.onData(data['message']['message'].toString(), this);
           });
         }
       }
+      // }
     }
   }
 
@@ -135,28 +135,31 @@ class _ChatWidgetState extends State<ChatWidget> with TickerProviderStateMixin {
   }
 
   void _listen() {
-    _channel.stream.listen(
-      onData,
-      onDone: () async {
-        if (mounted) {
-          setState(() {
-            _isConnected = false;
-          });
-          await Future<void>.delayed(const Duration(milliseconds: 5000));
-          await _reconnect();
-        }
-      },
-      // ignore: argument_type_not_assignable_to_error_handler
-      onError: () async {
-        if (mounted) {
-          setState(() {
-            _isConnected = false;
-          });
-          await Future<void>.delayed(const Duration(milliseconds: 5000));
-          await _reconnect();
-        }
-      },
-    );
+    try {
+      _channel.stream.listen(
+        onData,
+        onError: (dynamic error) async {
+          if (mounted) {
+            setState(() {
+              _isConnected = false;
+            });
+            await Future<void>.delayed(const Duration(milliseconds: 5000));
+            await _reconnect();
+          }
+        },
+        onDone: () async {
+          if (mounted) {
+            setState(() {
+              _isConnected = false;
+            });
+            await Future<void>.delayed(const Duration(milliseconds: 5000));
+            await _reconnect();
+          }
+        },
+      );
+    } catch (e) {
+      print(e);
+    }
   }
 
   Future<void> _reconnect() async {
@@ -227,13 +230,12 @@ class _ChatWidgetState extends State<ChatWidget> with TickerProviderStateMixin {
             child: Row(
               children: [
                 Icon(
-                    _isConnected
-                        ? widget.connectedIcon
-                        : widget.disconnectedIcon,
-                    size: 17,
-                    color: _isConnected
-                        ? widget.connectedColor
-                        : widget.disconnectedColor),
+                  _isConnected ? widget.connectedIcon : widget.disconnectedIcon,
+                  size: 17,
+                  color: _isConnected
+                      ? widget.connectedColor
+                      : widget.disconnectedColor,
+                ),
                 const SizedBox(
                   width: 4,
                 ),
