@@ -17,12 +17,12 @@ class ChatWidget extends StatefulWidget {
     this.disconnectedMessage = 'Desconectado',
     this.connectedIcon = Icons.wifi,
     this.disconnectedIcon = Icons.wifi_off,
-    this.connectedColor = Colors.orange,
+    this.connectedColor = Colors.red,
     this.disconnectedColor = Colors.black,
     this.connectedTexStyle = const TextStyle(
       fontWeight: FontWeight.w600,
       fontSize: 15,
-      color: Colors.orange,
+      color: Colors.red,
     ),
     this.disconnectedTexStyle = const TextStyle(
       fontWeight: FontWeight.w600,
@@ -194,7 +194,7 @@ class _ChatWidgetState extends State<ChatWidget> with TickerProviderStateMixin {
                 width: 25,
                 height: 25,
                 child: const CircularProgressIndicator(
-                  backgroundColor: Colors.orange,
+                  backgroundColor: Colors.red,
                   strokeWidth: 2,
                 ),
               ),
@@ -262,8 +262,7 @@ class _ChatWidgetState extends State<ChatWidget> with TickerProviderStateMixin {
                     _handleSubmit(textEditingController.text);
                   },
                   child: CircleAvatar(
-                    backgroundColor:
-                        widget.sendButtonColor ?? Colors.orangeAccent,
+                    backgroundColor: widget.sendButtonColor ?? Colors.redAccent,
                     child: Icon(
                       widget.sendIcon ?? Icons.send,
                       color: widget.iconColor ?? Colors.white,
